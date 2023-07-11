@@ -37,12 +37,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
 
         final String authorizationHeader = request.getHeader("Authorization");
-        String username = null;
+        String naverId = null;
         String jwt = null;
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
-            username = jwtUtil.extractUsername(jwt);
+            naverId = jwtUtil.extractNaverId(jwt);
         } else {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT");
             return ;
@@ -55,8 +55,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
             return ;
         }
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.securityService.loadUserByUsername(username);
+        if (naverId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = this.securityService.loadUserByUsername(naverId);
             if (jwtUtil.validateToken(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
@@ -68,6 +68,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 return ;
             }
         }
+        request.setAttribute("naverId" ,((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername());
         chain.doFilter(request, response);
     }
 }

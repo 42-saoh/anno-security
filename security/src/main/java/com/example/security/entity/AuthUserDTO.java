@@ -1,18 +1,21 @@
 package com.example.security.entity;
 
-public class UserDTO {
+public class AuthUserDTO {
     private String name;
     private String email;
     private String naverId;
-    private String roles;
-    public UserDTO() {
+    private String token;
+    private boolean isNew;
+
+    public AuthUserDTO() {
     }
 
-    public UserDTO(String name, String email, String naverId, String roles) {
+    public AuthUserDTO(String name, String email, String naverId, String token, boolean isNew) {
         this.name = name;
         this.email = email;
         this.naverId = naverId;
-        this.roles = roles;
+        this.token = token;
+        this.isNew = isNew;
     }
 
     public String getName() {
@@ -39,11 +42,19 @@ public class UserDTO {
         this.naverId = naverId;
     }
 
-    public String getRoles() {
-        return roles;
+    public String getToken() {
+        return token;
     }
 
-    public void setRoles(String roles) {
-        this.roles = roles;
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public boolean isNew() {
+        return isNew;
+    }
+
+    public void setNew(boolean aNew) {
+        isNew = aNew;
     }
 }

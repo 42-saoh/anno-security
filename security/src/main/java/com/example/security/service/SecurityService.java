@@ -8,17 +8,14 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Collections;
 
 public class SecurityService implements UserDetailsService {
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
 
-    public SecurityService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+    public SecurityService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @SecurityOneAnnotation("This is a value")
@@ -32,16 +29,19 @@ public class SecurityService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity userEntity = userRepository.findByUsername(username);
+    public UserDetails loadUserByUsername(String naverId) throws UsernameNotFoundException {
+        UserEntity userEntity = userRepository.findByNaverId(naverId);
         if (userEntity == null) {
-            throw new UsernameNotFoundException(username);
+            throw new UsernameNotFoundException(naverId);
         }
-        return new User(userEntity.getUsername(), userEntity.getPassword(), Collections.singletonList(userEntity.getRoles()));
+        return new User(userEntity.getNaverId(), "", Collections.singletonList(userEntity.getRoles()));
     }
 
     public UserEntity signup(UserEntity user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
+    }
+
+    public UserEntity getUserByNaverId(String naverId) {
+        return userRepository.findByNaverId(naverId);
     }
 }

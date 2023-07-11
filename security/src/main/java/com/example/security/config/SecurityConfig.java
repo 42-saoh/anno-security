@@ -27,21 +27,18 @@ import java.util.Arrays;
 @EnableWebSecurity
 public class SecurityConfig {
     private final SecurityService securityService;
-    private final BCryptPasswordEncoder passwordEncoder;
     private final JwtRequestFilter jwtRequestFilter;
 
 
     public SecurityConfig(SecurityService securityService,
-                          BCryptPasswordEncoder passwordEncoder,
                           JwtRequestFilter jwtRequestFilter) {
         this.securityService = securityService;
-        this.passwordEncoder = passwordEncoder;
         this.jwtRequestFilter = jwtRequestFilter;
     }
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(securityService).passwordEncoder(passwordEncoder);
+        auth.userDetailsService(securityService);
     }
 
     @Bean
@@ -50,7 +47,7 @@ public class SecurityConfig {
                 .csrf().disable()
                 .cors().and()
                 .authorizeRequests(authz -> authz
-                        .antMatchers("/", "/login", "/sign", "/oauth2").permitAll()
+                        .antMatchers("/", "/sign", "/oauth2").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic().disable()
                 .logout(logout -> logout
@@ -58,11 +55,6 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/"))
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean

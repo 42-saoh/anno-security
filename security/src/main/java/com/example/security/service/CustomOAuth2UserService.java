@@ -1,35 +1,33 @@
 package com.example.security.service;
 
+import com.example.security.entity.AuthUserDTO;
+import com.example.security.entity.UserEntity;
+import com.example.security.jwt.JwtUtil;
+import com.example.security.repository.UserRepository;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
 import java.util.Map;
-
-
-@Service
-public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
+public class CustomOAuth2UserService {
 
     private final RestTemplate restTemplate;
+    private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
 
-    public CustomOAuth2UserService() {
+    public CustomOAuth2UserService(UserRepository userRepository, JwtUtil jwtUtil) {
         this.restTemplate = new RestTemplate();
+        this.userRepository = userRepository;
+        this.jwtUtil = jwtUtil;
     }
 
-    @Override
-    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+    public AuthUserDTO loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         String userInfoUri = userRequest.getClientRegistration()
                 .getProviderDetails().getUserInfoEndpoint().getUri();
 
@@ -48,15 +46,20 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         HttpEntity<String> entity = new HttpEntity<>("", headers);
         ResponseEntity<Map> response = restTemplate.exchange(userInfoUri, HttpMethod.GET, entity, Map.class);
         Map responseAttributes = response.getBody();
-        Map userAttributes = null;
+        Map userAttributes = (Map) responseAttributes.get("response");
 
-        if (responseAttributes != null) {
-            userAttributes = (Map) responseAttributes.get("response");
+        UserEntity userEntity = userRepository.findByNaverId((String) userAttributes.get("id"));
+        AuthUserDTO userDTO = new AuthUserDTO();
+        if (userEntity == null) {
+            userDTO.setNaverId((String) userAttributes.get("id"));
+            userDTO.setName((String) userAttributes.get("name"));
+            userDTO.setEmail((String) userAttributes.get("email"));
+            userDTO.setToken(jwtUtil.generateToken(userDTO.getNaverId()));
+            userDTO.setNew(true);
+        } else {
+            userDTO.setToken(jwtUtil.generateToken(userEntity.getNaverId()));
+            userDTO.setNew(false);
         }
-
-
-        return new DefaultOAuth2User(Collections.
-                singleton(new SimpleGrantedAuthority("ROLE_USER")),
-                userAttributes, "name");
+        return userDTO;
     }
 }

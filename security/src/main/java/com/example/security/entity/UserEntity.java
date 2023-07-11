@@ -1,9 +1,6 @@
 package com.example.security.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
 public class UserEntity {
@@ -11,23 +8,26 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     private int id;
-    private String username;
-    private String password;
+    private String name;
+    private String email;
+    private String naverId;
     private UserRole roles;
 
     public UserEntity() {
     }
 
-    public UserEntity(String username, String password, UserRole roles) {
-        this.username = username;
-        this.password = password;
+    public UserEntity(String name, String email, String naverId, UserRole roles) {
+        this.name = name;
+        this.email = email;
+        this.naverId = naverId;
         this.roles = roles;
     }
 
-    public UserEntity(int id, String username, String password, UserRole roles) {
+    public UserEntity(int id, String name, String email, String naverId, UserRole roles) {
         this.id = id;
-        this.username = username;
-        this.password = password;
+        this.name = name;
+        this.email = email;
+        this.naverId = naverId;
         this.roles = roles;
     }
 
@@ -39,20 +39,28 @@ public class UserEntity {
         this.id = id;
     }
 
-    public String getUsername() {
-        return username;
+    public String getName() {
+        return name;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getPassword() {
-        return password;
+    public String getEmail() {
+        return email;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getNaverId() {
+        return naverId;
+    }
+
+    public void setNaverId(String naverId) {
+        this.naverId = naverId;
     }
 
     public UserRole getRoles() {

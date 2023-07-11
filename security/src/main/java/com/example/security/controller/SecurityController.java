@@ -8,9 +8,6 @@ import com.example.security.jwt.JwtUtil;
 import com.example.security.service.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,14 +17,11 @@ public class SecurityController {
 
     private final SecurityService securityService;
     private final JwtUtil jwtUtil;
-    private final AuthenticationManager authenticationManager;
 
     @Autowired
-    public SecurityController(SecurityService securityService, JwtUtil jwtUtil,
-                              AuthenticationManager authenticationManager) {
+    public SecurityController(SecurityService securityService, JwtUtil jwtUtil) {
         this.securityService = securityService;
         this.jwtUtil = jwtUtil;
-        this.authenticationManager = authenticationManager;
     }
 
     @RequestMapping("/")
@@ -42,21 +36,19 @@ public class SecurityController {
 
     @PostMapping("sign")
     public ResponseEntity<?> signup(@RequestBody UserDTO user) {
-        UserEntity newUser = securityService.signup(new UserEntity(user.getUsername(), user.getPassword(), UserRole.valueOf(user.getRoles())));
+        UserEntity newUser = securityService.signup(new UserEntity(user.getName(), user.getEmail(), user.getNaverId(), UserRole.valueOf(user.getRoles())));
         if (newUser == null) {
             return ResponseEntity.badRequest().body("User already exists");
         }
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new JwtResponse(jwtUtil.generateToken(user.getNaverId())));
     }
 
-    @PostMapping("login")
-    public ResponseEntity<?> login(@RequestBody UserDTO user) {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
-        } catch (BadCredentialsException e) {
-            return ResponseEntity.badRequest().body("Incorrect username or password");
+    @GetMapping("me")
+    public ResponseEntity<?> me(@RequestAttribute("naverId") String naverId) {
+        UserEntity user = securityService.getUserByNaverId(naverId);
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User does not exist");
         }
-        return ResponseEntity.ok(new JwtResponse(jwtUtil.generateToken(user.getUsername())));
+        return ResponseEntity.ok(user);
     }
 }

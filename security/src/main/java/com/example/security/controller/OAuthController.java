@@ -1,7 +1,10 @@
 package com.example.security.controller;
 
 import com.example.security.entity.AuthDTO;
+import com.example.security.entity.AuthUserDTO;
+import com.example.security.entity.UserDTO;
 import com.example.security.service.CustomOAuth2UserService;
+import com.example.security.service.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
@@ -54,7 +57,7 @@ public class OAuthController {
         OAuth2AuthorizationCodeGrantRequest grantRequest = new OAuth2AuthorizationCodeGrantRequest(naverRegistration, authorizationExchange);
         OAuth2AccessTokenResponse tokenResponse = accessTokenResponseClient.getTokenResponse(grantRequest);
         OAuth2UserRequest userRequest = new OAuth2UserRequest(naverRegistration, tokenResponse.getAccessToken());
-        OAuth2User oauthUser = oauthUserService.loadUser(userRequest);
-        return ResponseEntity.ok(oauthUser);
+        AuthUserDTO userDTO = oauthUserService.loadUser(userRequest);
+        return ResponseEntity.ok(userDTO);
     }
 }

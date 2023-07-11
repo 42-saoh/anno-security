@@ -6,7 +6,6 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import javax.swing.text.StyledEditorKit;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -15,7 +14,7 @@ public class JwtUtil {
     private final String SECRET_KEY = "secret";
     private final int EXPIRATION_TIME = 1000 * 60 * 60 * 10;
 
-    public String extractUsername(String token) {
+    public String extractNaverId(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -36,8 +35,8 @@ public class JwtUtil {
         return extractExpiration(token).before(new Date());
     }
 
-    public String generateToken(String username) {
-        return createToken(username);
+    public String generateToken(String naverId) {
+        return createToken(naverId);
     }
 
     private String createToken(String subject) {
@@ -51,8 +50,8 @@ public class JwtUtil {
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        final String naverId = extractNaverId(token);
+        return (naverId.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
 }

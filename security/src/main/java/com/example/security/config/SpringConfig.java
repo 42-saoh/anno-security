@@ -1,20 +1,21 @@
 package com.example.security.config;
 
+import com.example.security.jwt.JwtUtil;
+import com.example.security.service.CustomOAuth2UserService;
 import com.example.security.service.SecurityService;
 import com.example.security.repository.UserJPARepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Configuration
 public class SpringConfig {
     @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    public SecurityService securityService(UserJPARepository userJPARepository) {
+        return new SecurityService(userJPARepository);
     }
 
     @Bean
-    public SecurityService securityService(UserJPARepository userJPARepository, BCryptPasswordEncoder passwordEncoder) {
-        return new SecurityService(userJPARepository, passwordEncoder);
+    public CustomOAuth2UserService customOAuth2UserService(UserJPARepository userJPARepository, JwtUtil jwtUtil) {
+        return new CustomOAuth2UserService(userJPARepository, jwtUtil);
     }
 }
